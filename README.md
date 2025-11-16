@@ -8,6 +8,7 @@
 - ✅ **TXT 轉 PDF** - 將純文字檔案轉換為 PDF 文件
 - ✅ **生成空白 PDF** - 快速建立空白的 PDF 文件
 - ✅ **生成多份副本** - 一次生成多份相同內容的 PDF
+- 🎲 **隨機行數生成** - 每份 PDF 隨機選擇不同的行數和內容
 - ✅ **UTF-8 編碼支援** - 完整支援中文和其他 Unicode 字符
 
 ### 文件處理
@@ -83,7 +84,25 @@ python generate_pdf.py input.txt output --copies 3
 # 產生: output_1.pdf, output_2.pdf, output_3.pdf
 ```
 
-### 3. 生成空白 PDF
+### 3. 隨機行數生成（每份 PDF 內容不同）
+
+```bash
+# 生成 3 份 PDF，每份隨機選擇不同的行數和內容
+python generate_pdf.py input.txt --random --copies 3
+# 範例輸出：
+#   第 1 份：隨機選擇了 6 行（第 1, 5, 6, 7, 9, 10 行）
+#   第 2 份：隨機選擇了 10 行（全部）
+#   第 3 份：隨機選擇了 8 行（第 1, 2, 3, 4, 5, 6, 8, 9 行）
+
+# 使用簡短參數 -r
+python generate_pdf.py input.txt -r -c 5
+
+# 指定基礎檔名
+python generate_pdf.py input.txt output -r -c 3
+# 產生: output_1.pdf, output_2.pdf, output_3.pdf（每份內容隨機）
+```
+
+### 4. 生成空白 PDF
 
 ```bash
 python generate_pdf.py
@@ -91,17 +110,21 @@ python generate_pdf.py
 
 執行後會在當前目錄生成空白的 `output.pdf` 文件。
 
-### 4. 在程式中使用
+### 5. 在程式中使用
 
 ```python
-from generate_pdf import txt_to_pdf, txt_to_pdf_multiple, create_blank_pdf
+from generate_pdf import txt_to_pdf, txt_to_pdf_multiple, txt_to_pdf_random_lines, create_blank_pdf
 
 # 將 txt 轉換為 PDF
 txt_to_pdf("my_text.txt", "my_output.pdf")
 
-# 生成多份 PDF 副本
+# 生成多份 PDF 副本（相同內容）
 txt_to_pdf_multiple("my_text.txt", copies=5)
 # 產生: my_text_1.pdf, my_text_2.pdf, ..., my_text_5.pdf
+
+# 生成多份隨機內容的 PDF（每份內容不同）
+txt_to_pdf_random_lines("my_text.txt", copies=3)
+# 每份 PDF 隨機選擇不同的行數和行號
 
 # 指定基礎檔名生成多份
 txt_to_pdf_multiple("my_text.txt", copies=3, base_pdf_filename="custom_name")
