@@ -7,6 +7,7 @@
 ### 核心功能
 - ✅ **TXT 轉 PDF** - 將純文字檔案轉換為 PDF 文件
 - ✅ **生成空白 PDF** - 快速建立空白的 PDF 文件
+- ✅ **生成多份副本** - 一次生成多份相同內容的 PDF
 - ✅ **UTF-8 編碼支援** - 完整支援中文和其他 Unicode 字符
 
 ### 文件處理
@@ -66,7 +67,23 @@ python generate_pdf.py input.txt
 python generate_pdf.py input.txt output.pdf
 ```
 
-### 2. 生成空白 PDF
+### 2. 生成多份 PDF 副本
+
+```bash
+# 生成 3 份相同內容的 PDF
+python generate_pdf.py input.txt --copies 3
+# 產生: input_1.pdf, input_2.pdf, input_3.pdf
+
+# 使用簡短參數 -c
+python generate_pdf.py input.txt -c 5
+# 產生: input_1.pdf, input_2.pdf, input_3.pdf, input_4.pdf, input_5.pdf
+
+# 指定基礎檔名並生成多份
+python generate_pdf.py input.txt output --copies 3
+# 產生: output_1.pdf, output_2.pdf, output_3.pdf
+```
+
+### 3. 生成空白 PDF
 
 ```bash
 python generate_pdf.py
@@ -74,13 +91,21 @@ python generate_pdf.py
 
 執行後會在當前目錄生成空白的 `output.pdf` 文件。
 
-### 3. 在程式中使用
+### 4. 在程式中使用
 
 ```python
-from generate_pdf import txt_to_pdf, create_blank_pdf
+from generate_pdf import txt_to_pdf, txt_to_pdf_multiple, create_blank_pdf
 
 # 將 txt 轉換為 PDF
 txt_to_pdf("my_text.txt", "my_output.pdf")
+
+# 生成多份 PDF 副本
+txt_to_pdf_multiple("my_text.txt", copies=5)
+# 產生: my_text_1.pdf, my_text_2.pdf, ..., my_text_5.pdf
+
+# 指定基礎檔名生成多份
+txt_to_pdf_multiple("my_text.txt", copies=3, base_pdf_filename="custom_name")
+# 產生: custom_name_1.pdf, custom_name_2.pdf, custom_name_3.pdf
 
 # 生成空白 PDF
 create_blank_pdf("blank.pdf")

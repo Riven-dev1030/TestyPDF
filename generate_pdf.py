@@ -109,6 +109,107 @@ def txt_to_pdf(txt_filename, pdf_filename=None):
     print(f"已將 {txt_filename} 轉換為 PDF: {pdf_filename}")
 
 
+def txt_to_pdf_multiple(txt_filename, copies=1, base_pdf_filename=None):
+    """
+    讀取 txt 文件並生成多份 PDF
+
+    Args:
+        txt_filename: 要讀取的 txt 檔案路徑
+        copies: 要生成的 PDF 份數（預設為 1）
+        base_pdf_filename: 基礎 PDF 檔案名稱（若未指定，則使用 txt 檔案名稱）
+
+    Returns:
+        生成的 PDF 檔案路徑列表
+    """
+    if copies < 1:
+        print("錯誤: 份數必須至少為 1")
+        return []
+
+    # 讀取 txt 檔案內容（只讀取一次，提高效率）
+    try:
+        with open(txt_filename, 'r', encoding='utf-8') as f:
+            text_content = f.readlines()
+    except FileNotFoundError:
+        print(f"錯誤: 找不到檔案 {txt_filename}")
+        return []
+    except Exception as e:
+        print(f"讀取檔案時發生錯誤: {e}")
+        return []
+
+    # 決定基礎檔名
+    if base_pdf_filename is None:
+        base_pdf_filename = os.path.basename(txt_filename).rsplit('.', 1)[0]
+    else:
+        # 移除 .pdf 副檔名（如果有的話）
+        base_pdf_filename = base_pdf_filename.rsplit('.pdf', 1)[0]
+
+    generated_files = []
+
+    # 生成多份 PDF
+    for i in range(1, copies + 1):
+        # 生成檔名
+        if copies == 1:
+            pdf_filename = f"{base_pdf_filename}.pdf"
+        else:
+            pdf_filename = f"{base_pdf_filename}_{i}.pdf"
+
+        # 取得完整的輸出路徑
+        pdf_filename = _get_output_path(pdf_filename)
+
+        # 建立 canvas 物件
+        c = canvas.Canvas(pdf_filename, pagesize=A4)
+        width, height = A4
+
+        # 設定字型和大小
+        c.setFont("Helvetica", 12)
+
+        # 設定起始位置和行距
+        y_position = height - 2*cm
+        line_height = 0.6*cm
+        margin_left = 2*cm
+        margin_right = width - 2*cm
+        margin_bottom = 2*cm
+
+        # 逐行寫入內容
+        for line in text_content:
+            line = line.rstrip('\n')  # 移除換行符號
+
+            # 檢查是否需要換頁
+            if y_position < margin_bottom:
+                c.showPage()  # 新增頁面
+                c.setFont("Helvetica", 12)
+                y_position = height - 2*cm
+
+            # 處理過長的行（簡單換行處理）
+            if len(line) > 80:
+                # 將長行分割成多個短行
+                chunks = [line[i:i+80] for i in range(0, len(line), 80)]
+                for chunk in chunks:
+                    c.drawString(margin_left, y_position, chunk)
+                    y_position -= line_height
+                    if y_position < margin_bottom:
+                        c.showPage()
+                        c.setFont("Helvetica", 12)
+                        y_position = height - 2*cm
+            else:
+                c.drawString(margin_left, y_position, line)
+                y_position -= line_height
+
+        # 儲存 PDF
+        c.save()
+        generated_files.append(pdf_filename)
+
+        if copies == 1:
+            print(f"已將 {txt_filename} 轉換為 PDF: {pdf_filename}")
+        else:
+            print(f"[{i}/{copies}] 已生成: {pdf_filename}")
+
+    if copies > 1:
+        print(f"\n✅ 成功生成 {copies} 份 PDF")
+
+    return generated_files
+
+
 def create_blank_pdf(filename="output.pdf"):
     """
     建立一個空白的 PDF 文件
@@ -130,11 +231,44 @@ def create_blank_pdf(filename="output.pdf"):
 if __name__ == "__main__":
     import sys
 
-    if len(sys.argv) > 1:
-        # 如果有命令列參數，將 txt 轉為 PDF
-        txt_file = sys.argv[1]
-        pdf_file = sys.argv[2] if len(sys.argv) > 2 else None
-        txt_to_pdf(txt_file, pdf_file)
+    # 解析命令列參數
+    args = sys.argv[1:]
+    copies = 1
+    txt_file = None
+    pdf_file = None
+
+    # 處理 --copies 或 -c 參數
+    i = 0
+    while i < len(args):
+        if args[i] in ['--copies', '-c']:
+            if i + 1 < len(args):
+                try:
+                    copies = int(args[i + 1])
+                    i += 2
+                    continue
+                except ValueError:
+                    print(f"錯誤: --copies 參數必須是數字")
+                    sys.exit(1)
+            else:
+                print(f"錯誤: --copies 參數需要指定份數")
+                sys.exit(1)
+        elif txt_file is None:
+            txt_file = args[i]
+            i += 1
+        elif pdf_file is None:
+            pdf_file = args[i]
+            i += 1
+        else:
+            i += 1
+
+    if txt_file:
+        # 有 txt 檔案，轉換為 PDF
+        if copies > 1:
+            # 生成多份 PDF
+            txt_to_pdf_multiple(txt_file, copies, pdf_file)
+        else:
+            # 生成單份 PDF
+            txt_to_pdf(txt_file, pdf_file)
     else:
         # 沒有參數時，生成空白 PDF
         create_blank_pdf("output.pdf")
