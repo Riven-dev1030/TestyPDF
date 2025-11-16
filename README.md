@@ -19,17 +19,7 @@ pip install -r requirements.txt
 
 ## 使用方法
 
-### 1. 生成範例 PDF
-
-```bash
-python generate_pdf.py
-```
-
-執行後會在當前目錄生成：
-- `output.pdf` - 範例 PDF 文件
-- `example_from_txt.pdf` - 從 txt 轉換的範例 PDF
-
-### 2. 將 TXT 文件轉換為 PDF
+### 1. 將 TXT 文件轉換為 PDF
 
 ```bash
 # 基本用法（PDF 檔名自動生成）
@@ -39,16 +29,24 @@ python generate_pdf.py input.txt
 python generate_pdf.py input.txt output.pdf
 ```
 
+### 2. 生成空白 PDF
+
+```bash
+python generate_pdf.py
+```
+
+執行後會在當前目錄生成空白的 `output.pdf` 文件。
+
 ### 3. 在程式中使用
 
 ```python
-from generate_pdf import txt_to_pdf, create_simple_pdf
+from generate_pdf import txt_to_pdf, create_blank_pdf
 
 # 將 txt 轉換為 PDF
 txt_to_pdf("my_text.txt", "my_output.pdf")
 
-# 生成自訂 PDF
-create_simple_pdf("custom.pdf")
+# 生成空白 PDF
+create_blank_pdf("blank.pdf")
 ```
 
 ## 需求
