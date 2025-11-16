@@ -12,6 +12,73 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.units import cm
 
 
+def txt_to_pdf(txt_filename, pdf_filename=None):
+    """
+    讀取 txt 文件並轉換為 PDF
+
+    Args:
+        txt_filename: 要讀取的 txt 檔案路徑
+        pdf_filename: 輸出的 PDF 檔案名稱（若未指定，則使用 txt 檔案名稱加上 .pdf）
+    """
+    # 如果沒有指定 PDF 檔案名稱，則使用 txt 檔案名稱
+    if pdf_filename is None:
+        pdf_filename = txt_filename.rsplit('.', 1)[0] + '.pdf'
+
+    # 讀取 txt 檔案內容
+    try:
+        with open(txt_filename, 'r', encoding='utf-8') as f:
+            text_content = f.readlines()
+    except FileNotFoundError:
+        print(f"錯誤: 找不到檔案 {txt_filename}")
+        return
+    except Exception as e:
+        print(f"讀取檔案時發生錯誤: {e}")
+        return
+
+    # 建立 canvas 物件
+    c = canvas.Canvas(pdf_filename, pagesize=A4)
+    width, height = A4
+
+    # 設定字型和大小
+    c.setFont("Helvetica", 12)
+
+    # 設定起始位置和行距
+    y_position = height - 2*cm
+    line_height = 0.6*cm
+    margin_left = 2*cm
+    margin_right = width - 2*cm
+    margin_bottom = 2*cm
+
+    # 逐行寫入內容
+    for line in text_content:
+        line = line.rstrip('\n')  # 移除換行符號
+
+        # 檢查是否需要換頁
+        if y_position < margin_bottom:
+            c.showPage()  # 新增頁面
+            c.setFont("Helvetica", 12)
+            y_position = height - 2*cm
+
+        # 處理過長的行（簡單換行處理）
+        if len(line) > 80:
+            # 將長行分割成多個短行
+            chunks = [line[i:i+80] for i in range(0, len(line), 80)]
+            for chunk in chunks:
+                c.drawString(margin_left, y_position, chunk)
+                y_position -= line_height
+                if y_position < margin_bottom:
+                    c.showPage()
+                    c.setFont("Helvetica", 12)
+                    y_position = height - 2*cm
+        else:
+            c.drawString(margin_left, y_position, line)
+            y_position -= line_height
+
+    # 儲存 PDF
+    c.save()
+    print(f"已將 {txt_filename} 轉換為 PDF: {pdf_filename}")
+
+
 def create_simple_pdf(filename="output.pdf"):
     """
     建立一個簡單的 PDF 文件
@@ -63,4 +130,36 @@ def create_simple_pdf(filename="output.pdf"):
 
 
 if __name__ == "__main__":
-    create_simple_pdf("output.pdf")
+    import sys
+
+    if len(sys.argv) > 1:
+        # 如果有命令列參數，將 txt 轉為 PDF
+        txt_file = sys.argv[1]
+        pdf_file = sys.argv[2] if len(sys.argv) > 2 else None
+        txt_to_pdf(txt_file, pdf_file)
+    else:
+        # 沒有參數時，執行範例
+        print("生成範例 PDF...")
+        create_simple_pdf("output.pdf")
+
+        # 也示範 txt 轉 PDF 功能
+        print("\n示範 txt 轉 PDF 功能...")
+        # 創建一個範例 txt 檔案
+        with open("example.txt", "w", encoding="utf-8") as f:
+            f.write("這是一個測試文件\n")
+            f.write("TestyPDF - TXT to PDF Converter\n")
+            f.write("\n")
+            f.write("功能說明:\n")
+            f.write("1. 讀取 txt 檔案內容\n")
+            f.write("2. 自動處理換行和分頁\n")
+            f.write("3. 支援 UTF-8 編碼\n")
+            f.write("4. 處理過長的文字行\n")
+            f.write("\n")
+            f.write("使用方法:\n")
+            f.write("python generate_pdf.py input.txt [output.pdf]\n")
+
+        txt_to_pdf("example.txt", "example_from_txt.pdf")
+
+        print("\n完成！生成了以下檔案:")
+        print("- output.pdf (範例 PDF)")
+        print("- example_from_txt.pdf (從 txt 轉換的 PDF)")

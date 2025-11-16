@@ -23,8 +23,9 @@ wheels/
 .installed.cfg
 *.egg
 
-# Generated PDF files
+# Generated files
 *.pdf
+example.txt
 
 # IDE
 .vscode/
