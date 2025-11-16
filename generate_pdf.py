@@ -19,6 +19,40 @@ OUTPUT_DIR = None  # 例如: "/path/to/your/pdfs" 或 "./output"
 # ===============================================
 
 
+def _read_text_file(filename):
+    """
+    讀取文字檔案，自動嘗試多種編碼格式
+
+    Args:
+        filename: 檔案路徑
+
+    Returns:
+        文件內容（行列表）
+
+    Raises:
+        FileNotFoundError: 檔案不存在
+        Exception: 無法讀取檔案
+    """
+    # 嘗試的編碼列表（依常見程度排序）
+    encodings = ['utf-8', 'big5', 'gbk', 'gb2312', 'utf-16', 'cp950', 'latin1']
+
+    for encoding in encodings:
+        try:
+            with open(filename, 'r', encoding=encoding) as f:
+                content = f.readlines()
+            print(f"✓ 成功使用 {encoding.upper()} 編碼讀取檔案")
+            return content
+        except UnicodeDecodeError:
+            # 這個編碼不對，嘗試下一個
+            continue
+        except Exception as e:
+            # 其他錯誤（如檔案不存在），直接拋出
+            raise e
+
+    # 如果所有編碼都失敗
+    raise Exception(f"無法讀取檔案，已嘗試的編碼: {', '.join(encodings)}")
+
+
 def _get_output_path(filename):
     """
     取得完整的輸出路徑，並確保輸出目錄存在
@@ -57,8 +91,7 @@ def txt_to_pdf(txt_filename, pdf_filename=None):
 
     # 讀取 txt 檔案內容
     try:
-        with open(txt_filename, 'r', encoding='utf-8') as f:
-            text_content = f.readlines()
+        text_content = _read_text_file(txt_filename)
     except FileNotFoundError:
         print(f"錯誤: 找不到檔案 {txt_filename}")
         return
@@ -128,8 +161,7 @@ def txt_to_pdf_multiple(txt_filename, copies=1, base_pdf_filename=None):
 
     # 讀取 txt 檔案內容（只讀取一次，提高效率）
     try:
-        with open(txt_filename, 'r', encoding='utf-8') as f:
-            text_content = f.readlines()
+        text_content = _read_text_file(txt_filename)
     except FileNotFoundError:
         print(f"錯誤: 找不到檔案 {txt_filename}")
         return []
@@ -229,8 +261,7 @@ def txt_to_pdf_random_lines(txt_filename, copies=1, base_pdf_filename=None):
 
     # 讀取 txt 檔案內容（只讀取一次，提高效率）
     try:
-        with open(txt_filename, 'r', encoding='utf-8') as f:
-            text_content = f.readlines()
+        text_content = _read_text_file(txt_filename)
     except FileNotFoundError:
         print(f"錯誤: 找不到檔案 {txt_filename}")
         return []
