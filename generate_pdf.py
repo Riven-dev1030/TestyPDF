@@ -5,11 +5,38 @@
 使用 reportlab 庫來生成 PDF 文件
 """
 
+import os
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.units import cm
+
+# ==================== 設定區 ====================
+# 預設 PDF 輸出目錄（設為 None 則使用當前目錄）
+OUTPUT_DIR = None  # 例如: "/path/to/your/pdfs" 或 "./output"
+# ===============================================
+
+
+def _get_output_path(filename):
+    """
+    取得完整的輸出路徑，並確保輸出目錄存在
+
+    Args:
+        filename: 檔案名稱
+
+    Returns:
+        完整的輸出路徑
+    """
+    if OUTPUT_DIR is None:
+        return filename
+
+    # 確保輸出目錄存在
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
+        print(f"已建立輸出目錄: {OUTPUT_DIR}")
+
+    return os.path.join(OUTPUT_DIR, os.path.basename(filename))
 
 
 def txt_to_pdf(txt_filename, pdf_filename=None):
@@ -22,7 +49,10 @@ def txt_to_pdf(txt_filename, pdf_filename=None):
     """
     # 如果沒有指定 PDF 檔案名稱，則使用 txt 檔案名稱
     if pdf_filename is None:
-        pdf_filename = txt_filename.rsplit('.', 1)[0] + '.pdf'
+        pdf_filename = os.path.basename(txt_filename).rsplit('.', 1)[0] + '.pdf'
+
+    # 取得完整的輸出路徑
+    pdf_filename = _get_output_path(pdf_filename)
 
     # 讀取 txt 檔案內容
     try:
@@ -86,6 +116,9 @@ def create_blank_pdf(filename="output.pdf"):
     Args:
         filename: 輸出的 PDF 檔案名稱
     """
+    # 取得完整的輸出路徑
+    filename = _get_output_path(filename)
+
     # 建立 canvas 物件
     c = canvas.Canvas(filename, pagesize=A4)
 

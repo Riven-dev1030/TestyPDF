@@ -9,6 +9,7 @@
 - **將 TXT 文件轉換為 PDF**
 - 自動處理換行和分頁
 - 支援 UTF-8 編碼
+- **可自訂 PDF 輸出目錄**
 - 易於擴展和自訂
 
 ## 安裝
@@ -16,6 +17,34 @@
 ```bash
 pip install -r requirements.txt
 ```
+
+## 設定
+
+### 自訂 PDF 輸出目錄
+
+打開 `generate_pdf.py`，在檔案開頭找到設定區：
+
+```python
+# ==================== 設定區 ====================
+# 預設 PDF 輸出目錄（設為 None 則使用當前目錄）
+OUTPUT_DIR = None  # 例如: "/path/to/your/pdfs" 或 "./output"
+# ===============================================
+```
+
+修改 `OUTPUT_DIR` 來設定您想要的輸出目錄：
+
+```python
+# 使用絕對路徑
+OUTPUT_DIR = "/home/user/my_pdfs"
+
+# 或使用相對路徑
+OUTPUT_DIR = "./pdf_output"
+
+# 使用當前目錄（預設）
+OUTPUT_DIR = None
+```
+
+如果指定的目錄不存在，程式會自動建立。
 
 ## 使用方法
 
