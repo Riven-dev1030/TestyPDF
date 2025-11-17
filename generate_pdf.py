@@ -19,6 +19,52 @@ OUTPUT_DIR = None  # 例如: "/path/to/your/pdfs" 或 "./output"
 # ===============================================
 
 
+def _setup_chinese_font(c):
+    """
+    設定支援中文的字型
+
+    Args:
+        c: canvas 物件
+
+    Returns:
+        字型名稱
+    """
+    # 檢查是否已經註冊過字型
+    if hasattr(_setup_chinese_font, '_cached_font'):
+        return _setup_chinese_font._cached_font
+
+    # 嘗試載入常見的中文字型
+    font_paths = [
+        # Windows 字型
+        ('C:/Windows/Fonts/msjh.ttc', '微軟正黑體'),
+        ('C:/Windows/Fonts/kaiu.ttf', '標楷體'),
+        ('C:/Windows/Fonts/mingliu.ttc', '細明體'),
+        # Linux 字型
+        ('/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf', 'Droid Sans'),
+        ('/usr/share/fonts/truetype/wqy/wqy-microhei.ttc', '文泉驛微米黑'),
+        ('/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc', '文泉驛正黑'),
+        ('/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc', 'Noto Sans CJK'),
+        # macOS 字型
+        ('/System/Library/Fonts/PingFang.ttc', '蘋方'),
+        ('/Library/Fonts/Arial Unicode.ttf', 'Arial Unicode'),
+    ]
+
+    for font_path, font_name in font_paths:
+        if os.path.exists(font_path):
+            try:
+                pdfmetrics.registerFont(TTFont('ChineseFont', font_path))
+                print(f"✓ 使用字型: {font_name}")
+                _setup_chinese_font._cached_font = 'ChineseFont'
+                return 'ChineseFont'
+            except Exception as e:
+                continue
+
+    # 如果找不到中文字型，使用 Courier（至少不會完全亂碼）
+    print("⚠ 警告: 找不到中文字型，使用 Courier 字型（中文可能無法正確顯示）")
+    _setup_chinese_font._cached_font = 'Courier'
+    return 'Courier'
+
+
 def _read_text_file(filename):
     """
     讀取文字檔案，自動嘗試多種編碼格式
@@ -104,7 +150,8 @@ def txt_to_pdf(txt_filename, pdf_filename=None):
     width, height = A4
 
     # 設定字型和大小
-    c.setFont("Helvetica", 12)
+    font_name = _setup_chinese_font(c)
+    c.setFont(font_name, 12)
 
     # 設定起始位置和行距
     y_position = height - 2*cm
@@ -120,7 +167,7 @@ def txt_to_pdf(txt_filename, pdf_filename=None):
         # 檢查是否需要換頁
         if y_position < margin_bottom:
             c.showPage()  # 新增頁面
-            c.setFont("Helvetica", 12)
+            c.setFont(font_name, 12)
             y_position = height - 2*cm
 
         # 處理過長的行（簡單換行處理）
@@ -132,7 +179,7 @@ def txt_to_pdf(txt_filename, pdf_filename=None):
                 y_position -= line_height
                 if y_position < margin_bottom:
                     c.showPage()
-                    c.setFont("Helvetica", 12)
+                    c.setFont(font_name, 12)
                     y_position = height - 2*cm
         else:
             c.drawString(margin_left, y_position, line)
@@ -194,7 +241,8 @@ def txt_to_pdf_multiple(txt_filename, copies=1, base_pdf_filename=None):
         width, height = A4
 
         # 設定字型和大小
-        c.setFont("Helvetica", 12)
+        font_name = _setup_chinese_font(c)
+        c.setFont(font_name, 12)
 
         # 設定起始位置和行距
         y_position = height - 2*cm
@@ -210,7 +258,7 @@ def txt_to_pdf_multiple(txt_filename, copies=1, base_pdf_filename=None):
             # 檢查是否需要換頁
             if y_position < margin_bottom:
                 c.showPage()  # 新增頁面
-                c.setFont("Helvetica", 12)
+                c.setFont(font_name, 12)
                 y_position = height - 2*cm
 
             # 處理過長的行（簡單換行處理）
@@ -222,7 +270,7 @@ def txt_to_pdf_multiple(txt_filename, copies=1, base_pdf_filename=None):
                     y_position -= line_height
                     if y_position < margin_bottom:
                         c.showPage()
-                        c.setFont("Helvetica", 12)
+                        c.setFont(font_name, 12)
                         y_position = height - 2*cm
             else:
                 c.drawString(margin_left, y_position, line)
@@ -311,7 +359,8 @@ def txt_to_pdf_random_lines(txt_filename, copies=1, base_pdf_filename=None):
         width, height = A4
 
         # 設定字型和大小
-        c.setFont("Helvetica", 12)
+        font_name = _setup_chinese_font(c)
+        c.setFont(font_name, 12)
 
         # 設定起始位置和行距
         y_position = height - 2*cm
@@ -327,7 +376,7 @@ def txt_to_pdf_random_lines(txt_filename, copies=1, base_pdf_filename=None):
             # 檢查是否需要換頁
             if y_position < margin_bottom:
                 c.showPage()  # 新增頁面
-                c.setFont("Helvetica", 12)
+                c.setFont(font_name, 12)
                 y_position = height - 2*cm
 
             # 處理過長的行（簡單換行處理）
@@ -339,7 +388,7 @@ def txt_to_pdf_random_lines(txt_filename, copies=1, base_pdf_filename=None):
                     y_position -= line_height
                     if y_position < margin_bottom:
                         c.showPage()
-                        c.setFont("Helvetica", 12)
+                        c.setFont(font_name, 12)
                         y_position = height - 2*cm
             else:
                 c.drawString(margin_left, y_position, line)
